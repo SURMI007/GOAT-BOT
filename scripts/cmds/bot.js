@@ -17,7 +17,6 @@ module.exports = {
       console.log(response.data);
       const result = response.data.data.msg;
 
-
       api.sendMessage(result, event.threadID, (error, info) => {
         if (error) {
           console.error('Error replying to user:', error);
@@ -38,71 +37,69 @@ module.exports = {
     }
   },
 
-
-
-  onStart: async function ({ message , events, args, Users, permission, onReply, api }) {
+  onStart: async function ({ api, event, args, Users, permission, onReply }) {
     try {
       const msg = args.join(" ");
-      const userPermission = events.senderID && (await Users.getData(events.senderID)).permission;
+      const userPermission = event.senderID && (await Users.getData(event.senderID)).permission;
       const admin = global.GoatBot.config.adminBot;
       const apiData = await axios.get('https://raw.githubusercontent.com/MOHAMMAD-NAYAN/Nayan/main/api.json');
       const apiUrl = apiData.data.sim;
 
       if (!msg) {
         const tl = [
-  "আহ শুনা আমার তোমার অলিতে গলিতে উম্মাহ😇😘",
-  " কি গো সোনা আমাকে ডাকছ কেনো",
-  "বার বার আমাকে ডাকস কেন😡",
-  "আহ শোনা আমার আমাকে এতো ডাক্তাছো কেনো আসো বুকে আশো🥱",
-  "হুম জান তোমার অইখানে উম্মমাহ😷😘",
-  " আসসালামু আলাইকুম বলেন আপনার জন্য কি করতে পারি",
-  "আমাকে এতো না ডেকে বস নয়নকে একটা গফ দে 🙄",
-  "jang hanga korba",
-  "jang bal falaba🙂"
-];
-        var name = await Users.getNameUser(events.senderID);
-        var rand = tl[Math.floor(Math.random() * tl.length)];
-        return message.reply({ 
-              body: `╭────────────❍\n╰➤ 👤 𝐃𝐞𝐚𝐫 『${name}』,\n╰➤ 🗣️ ${rand}\n╰─────────────────➤`, 
-              mentions: [{ tag: name, id: events.senderID }] }, events.threadID, (error, info) => {
+          "আহ শুনা আমার তোমার অলিতে গলিতে উম্মাহ😇😘",
+          "কি গো সোনা আমাকে ডাকছ কেনো",
+          "বার বার আমাকে ডাকস কেন😡",
+          "আহ শোনা আমার আমাকে এতো ডাক্তাছো কেনো আসো বুকে আশো🥱",
+          "হুম জান তোমার অইখানে উম্মমাহ😷😘",
+          "আসসালামু আলাইকুম বলেন আপনার জন্য কি করতে পারি",
+          "আমাকে এতো না ডেকে বস নয়নকে একটা গফ দে 🙄",
+          "jang hanga korba",
+          "jang bal falaba🙂"
+        ];
+        const name = await Users.getNameUser(event.senderID);
+        const rand = tl[Math.floor(Math.random() * tl.length)];
+        return api.sendMessage({ 
+          body: `╭────────────❍\n╰➤ 👤 𝐃𝐞𝐚𝐫 『${name}』,\n╰➤ 🗣️ ${rand}\n╰─────────────────➤`, 
+          mentions: [{ tag: name, id: event.senderID }] 
+        }, event.threadID, (error, info) => {
           if (error) {
-            return message.reply('An error occurred while processing your request. Please try again later.', events.threadID, events.messageID);
+            return api.sendMessage('An error occurred while processing your request. Please try again later.', event.threadID, event.messageID);
           }
 
           global.GoatBot.onReply.set({
             type: 'reply',
             commandName: this.config.name,
             messageID: info.messageID,
-            author: events.senderID,
+            author: event.senderID,
             head: msg,
           });
-        }, events.messageID);
+        }, event.messageID);
       } 
 
-        else if (msg.startsWith("delete")) {
-            const userPermission = events.senderID && (await Users.getData(events.senderID)).permission;
-            const admin = global.GoatBot.config.adminBot;
-
-            if (!admin.includes(events.senderID.toString())) {
-                return message.reply('You do not have permission to use this command.', events.threadID, events.messageID);
-            }
-
-            const deleteParams = msg.replace("delete", "").trim().split("&");
-            const question = deleteParams[0].replace("ask=", "").trim();
-            const answer = deleteParams[1].replace("ans=", "").trim();
-
-            const response = await axios.get(`${apiUrl}/sim?type=delete&ask=${encodeURIComponent(question)}&ans=${encodeURIComponent(answer)}`);
-            const replyMessage = response.data.msg || response.data.data.msg;
-
-            return message.reply({ body: replyMessage }, events.threadID, events.messageID);
+      else if (msg.startsWith("delete")) {
+        if (!admin.includes(event.senderID.toString())) {
+          return api.sendMessage('You do not have permission to use this command.', event.threadID, event.messageID);
         }
+
+        const deleteParams = msg.replace("delete", "").trim().split("&");
+        const question = deleteParams[0].replace("ask=", "").trim();
+        const answer = deleteParams[1].replace("ans=", "").trim();
+
+        const response = await axios.get(`${apiUrl}/sim?type=delete&ask=${encodeURIComponent(question)}&ans=${encodeURIComponent(answer)}`);
+        const replyMessage = response.data.msg || response.data.data.msg;
+
+        return api.sendMessage({ body: replyMessage }, event.threadID, event.messageID);
+      }
+
       else if (msg.startsWith("info")) {
         const response = await axios.get(`${apiUrl}/sim?type=info`);
         const totalAsk = response.data.data.totalKeys;
         const totalAns = response.data.data.totalResponses;
 
-        return message.reply({ body: `Total Ask: ${totalAsk}\nTotal Answer: ${totalAns}` }, events.threadID, events.messageID);
+        return api.sendMessage({ body: `Total Ask: ${totalAsk}\nTotal Answer: ${totalAns}` }, event.threadID, event.messageID);
       } 
+
       else if (msg.startsWith("teach")) {
         const teachParams = msg.replace("teach", "").trim().split("&");
         const question = teachParams[0].replace("ask=", "").trim();
@@ -112,17 +109,19 @@ module.exports = {
         const replyMessage = response.data.msg;
         const ask = response.data.data.ask;
         const ans = response.data.data.ans;
-        if (replyMessage.includes("already")){
-          return nayan.reply(`📝Your Data Already Added To Database\n1️⃣ASK: ${ask}\n2️⃣ANS: ${ans}`, events.threadID, events.messageID)
+        
+        if (replyMessage.includes("already")) {
+          return api.sendMessage(`📝Your Data Already Added To Database\n1️⃣ASK: ${ask}\n2️⃣ANS: ${ans}`, event.threadID, event.messageID);
         }
 
-        return message.reply({ body: `📝Your Data Added To Database Successfully\n1️⃣ASK: ${ask}\n2️⃣ANS: ${ans}` }, events.threadID, events.messageID);
+        return api.sendMessage({ body: `📝Your Data Added To Database Successfully\n1️⃣ASK: ${ask}\n2️⃣ANS: ${ans}` }, event.threadID, event.messageID);
       }
+
       else if (msg.startsWith("askinfo")) {
         const question = msg.replace("askinfo", "").trim();
 
         if (!question) {
-          return message.reply('Please provide a question to get information about.', events.threadID, events.messageID);
+          return api.sendMessage('Please provide a question to get information about.', event.threadID, event.messageID);
         }
 
         const response = await axios.get(`${apiUrl}/sim?type=keyinfo&ask=${encodeURIComponent(question)}`);
@@ -130,15 +129,16 @@ module.exports = {
         const answers = replyData.answers;
 
         if (!answers || answers.length === 0) {
-          return message.reply(`No information available for the question: "${question}"`, events.threadID, events.messageID);
+          return api.sendMessage(`No information available for the question: "${question}"`, event.threadID, event.messageID);
         }
 
         const replyMessage = `Info for "${question}":\n\n` +
           answers.map((answer, index) => `📌 ${index + 1}. ${answer}`).join("\n") +
           `\n\nTotal answers: ${answers.length}`;
 
-        return message.reply({ body: replyMessage }, events.threadID, events.messageID);
+        return api.sendMessage({ body: replyMessage }, event.threadID, event.messageID);
       }
+
       else if (msg.startsWith("help")) {
         const cmd = this.config.name;
         const prefix = global.GoatBot.config.prefix;
@@ -156,31 +156,32 @@ module.exports = {
         5. 👋 ${prefix}${cmd} hi: Send a random greeting.
 
         ⚡ Use these commands to interact with the bot effectively!
-            `;
+        `;
 
-        return message.reply({ body: helpMessage }, events.threadID, events.messageID);
+        return api.sendMessage({ body: helpMessage }, event.threadID, event.messageID);
       }
+
       else {
         const response = await axios.get(`${apiUrl}/sim?type=ask&ask=${encodeURIComponent(msg)}`);
         const replyMessage = response.data.data.msg;
 
-        message.reply({ body: replyMessage }, events.threadID, (error, info) => {
+        api.sendMessage({ body: replyMessage }, event.threadID, (error, info) => {
           if (error) {
-            return message.reply('An error occurred while processing your request. Please try again later.', events.threadID, events.messageID);
+            return api.sendMessage('An error occurred while processing your request. Please try again later.', event.threadID, event.messageID);
           }
 
           global.GoatBot.onReply.set({
             type: 'reply',
             commandName: this.config.name,
             messageID: info.messageID,
-            author: events.senderID,
+            author: event.senderID,
             head: msg,
           });
-        }, events.messageID);
+        }, event.messageID);
       }
     } catch (error) {
       console.log(error);
-      message.reply('An error has occurred, please try again later.', events.threadID, events.messageID);
+      api.sendMessage('An error has occurred, please try again later.', event.threadID, event.messageID);
     }
   }
 };
