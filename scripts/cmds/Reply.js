@@ -1,7 +1,7 @@
 module.exports.config = {
 	name: "Reply",
 	version: "1.0.2",
-	role: 2,
+	role: 0,
 	author: "Nayan/mostakim",
 	prefix: false,
 	category: "without prefix",
