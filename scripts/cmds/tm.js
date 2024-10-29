@@ -18,7 +18,7 @@ module.exports = {
 				version: '2.1.0',
 				author: "Deku", // not change credits
 				countDown: 5,
-				role: 0,
+				role: 2,
 				shortDescription: 'Generate temporary email (auto get inbox)',
 				category: 'generate',
 				guide: {
@@ -36,7 +36,7 @@ module.exports = {
 						// Auto fetch
 						mail.autoFetch();
 
-						if (mail) reply("Your temporary email: " + mail.address);
+						if (mail) reply(" " + mail.address);
 
 						// Fetch function
 						const fetch = () => {
